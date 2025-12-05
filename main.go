@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -147,9 +148,15 @@ func main() {
 		json.NewEncoder(w).Encode(ChatReply{Reply: reply})
 	})
 
-	fmt.Println("Backend server running at http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		fmt.Println("Server error:", err)
+	port := os.Getenv("PORT")
+	if port == "" {
+		// Local dev fallback
+		port = "8080"
+	}
+
+	log.Printf("Starting server on :%s\n", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("server error: %v", err)
 	}
 }
 
