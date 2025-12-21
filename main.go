@@ -59,6 +59,7 @@ func main() {
 	}
 
 	http.HandleFunc("/api/chat", func(w http.ResponseWriter, r *http.Request) {
+		enableCORS(w, r)
 		if r.Method != http.MethodPost {
 			http.Error(w, "Only POST allowed", http.StatusMethodNotAllowed)
 			return
@@ -143,7 +144,7 @@ func main() {
 			Role:    "assistant",
 			Content: reply,
 		})
-		enableCORS(w)
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(ChatReply{Reply: reply})
 	})
@@ -166,11 +167,14 @@ func writeError(w http.ResponseWriter, msg string) {
 	json.NewEncoder(w).Encode(ChatReply{Error: msg})
 }
 
-func enableCORS(w http.ResponseWriter) {
-	w.Header().Set(
-		"Access-Control-Allow-Origin",
-		"https://dibinxavier.github.io",
-	)
+func enableCORS(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+
+	if origin == "https://dibinxavier.github.io" ||
+		origin == "http://localhost:5500" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+	}
+
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
