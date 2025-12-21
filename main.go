@@ -169,7 +169,7 @@ func writeError(w http.ResponseWriter, msg string) {
 func enableCORS(w http.ResponseWriter) {
 	w.Header().Set(
 		"Access-Control-Allow-Origin",
-		"https://dibinxavier.github.io/cerebraschat_fe/",
+		"https://dibinxavier.github.io",
 	)
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
