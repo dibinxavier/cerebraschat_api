@@ -59,7 +59,15 @@ func main() {
 	}
 
 	http.HandleFunc("/api/chat", func(w http.ResponseWriter, r *http.Request) {
+		// ✅ CORS FIRST — ALWAYS
 		enableCORS(w, r)
+
+		// ✅ Handle preflight
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		if r.Method != http.MethodPost {
 			http.Error(w, "Only POST allowed", http.StatusMethodNotAllowed)
 			return
@@ -78,14 +86,10 @@ func main() {
 		mu.Lock()
 		defer mu.Unlock()
 
-		// Add user message
 		messages = append(messages, Message{
 			Role:    "user",
 			Content: req.Message,
 		})
-
-		// Cerebras API call
-		url := "https://api.cerebras.ai/v1/chat/completions"
 
 		payload := map[string]interface{}{
 			"model":    "llama3.1-8b",
@@ -98,17 +102,20 @@ func main() {
 			return
 		}
 
-		httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+		httpReq, err := http.NewRequest(
+			"POST",
+			"https://api.cerebras.ai/v1/chat/completions",
+			bytes.NewBuffer(jsonData),
+		)
 		if err != nil {
 			writeError(w, "Request creation error: "+err.Error())
 			return
 		}
 
 		httpReq.Header.Set("Content-Type", "application/json")
-		httpReq.Header.Set("Authorization", "Bearer "+apiKey)
+		httpReq.Header.Set("Authorization", "Bearer "+os.Getenv("CEREBRAS_API_KEY"))
 
-		client := &http.Client{}
-		resp, err := client.Do(httpReq)
+		resp, err := http.DefaultClient.Do(httpReq)
 		if err != nil {
 			writeError(w, "API call error: "+err.Error())
 			return
@@ -132,14 +139,8 @@ func main() {
 			return
 		}
 
-		if len(apiRes.Choices) == 0 {
-			writeError(w, "No choices in response")
-			return
-		}
-
 		reply := apiRes.Choices[0].Message.Content
 
-		// Add assistant reply to conversation
 		messages = append(messages, Message{
 			Role:    "assistant",
 			Content: reply,
