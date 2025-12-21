@@ -143,7 +143,7 @@ func main() {
 			Role:    "assistant",
 			Content: reply,
 		})
-
+		enableCORS(w)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(ChatReply{Reply: reply})
 	})
@@ -164,4 +164,13 @@ func writeError(w http.ResponseWriter, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
 	json.NewEncoder(w).Encode(ChatReply{Error: msg})
+}
+
+func enableCORS(w http.ResponseWriter) {
+	w.Header().Set(
+		"Access-Control-Allow-Origin",
+		"https://dibinxavier.github.io",
+	)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
