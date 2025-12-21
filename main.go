@@ -172,7 +172,8 @@ func enableCORS(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("Origin")
 
 	if origin == "https://dibinxavier.github.io" ||
-		origin == "http://localhost:5500" {
+		origin == "http://localhost:5500" ||
+		origin == "https://cerebraschat-fe.vercel.app" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 	}
 
