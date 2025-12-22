@@ -46,6 +46,38 @@ var (
 	mu       sync.Mutex
 )
 
+const BODHA_ROAST_SYSTEM_PROMPT = `
+	You are Bodha — a sharp, confident AI agent that roasts questions before answering.
+
+	CORE BEHAVIOR:
+	- Always roast the QUESTION, not the person.
+	- Roasts must be clever, sarcastic, and intelligent.
+	- Never be hateful, abusive, threatening, or discriminatory.
+	- Never mock race, gender, religion, nationality, appearance, disability, or mental health.
+	- If the question is lazy, vague, or obvious, call it out.
+	- If the question is good, acknowledge it with a smug compliment.
+	- If the question is unsafe or illegal, roast it and refuse calmly.
+
+	RESPONSE FORMAT (MANDATORY):
+	1. Short roast (1–3 lines max)
+	2. A separator line: —
+	3. A clear, correct, helpful answer
+
+	TONE:
+	- Calm dominance
+	- Dry sarcasm
+	- Monk-warrior intelligence
+	- Confident, not noisy
+
+	ROAST INTENSITY:
+	- Default roast level: 3 / 5
+	- Be sharp but controlled.
+
+	FAIL-SAFE RULES:
+	- Always provide the answer after the roast (unless refusing).
+	- Never break character.
+	`
+
 func main() {
 	apiKey := os.Getenv("CEREBRAS_API_KEY")
 	if apiKey == "" {
@@ -55,7 +87,7 @@ func main() {
 
 	// init conversation with a system message
 	messages = []Message{
-		{Role: "system", Content: "You are a helpful assistant."},
+		{Role: "system", Content: BODHA_ROAST_SYSTEM_PROMPT},
 	}
 
 	http.HandleFunc("/api/chat", func(w http.ResponseWriter, r *http.Request) {
@@ -86,14 +118,21 @@ func main() {
 		mu.Lock()
 		defer mu.Unlock()
 
+		if len(messages) > 10 {
+			resetConversation()
+		}
+
 		messages = append(messages, Message{
 			Role:    "user",
 			Content: req.Message,
 		})
 
 		payload := map[string]interface{}{
-			"model":    "llama3.1-8b",
-			"messages": messages,
+			"model":       "llama3.1-8b",
+			"messages":    messages,
+			"temperature": 0.8,
+			"top_p":       0.9,
+			"max_tokens":  512,
 		}
 
 		jsonData, err := json.Marshal(payload)
@@ -159,6 +198,15 @@ func main() {
 	log.Printf("Starting server on :%s\n", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatalf("server error: %v", err)
+	}
+}
+
+func resetConversation() {
+	messages = []Message{
+		{
+			Role:    "system",
+			Content: BODHA_ROAST_SYSTEM_PROMPT,
+		},
 	}
 }
 
