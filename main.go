@@ -133,8 +133,11 @@ func main() {
 			Content: req.Message,
 		})
 
+		// available models
+		// - gpt-oss-120b
+		// - zai-glm-4.7
 		payload := map[string]interface{}{
-			"model":       "zai-glm-4.7",
+			"model":       "gpt-oss-120b",
 			"messages":    messages,
 			"temperature": 0.8,
 			"top_p":       0.9,
