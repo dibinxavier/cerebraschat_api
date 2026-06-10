@@ -134,7 +134,7 @@ func main() {
 		})
 
 		payload := map[string]interface{}{
-			"model":       "llama3.1-8b",
+			"model":       "zai-glm-4.7",
 			"messages":    messages,
 			"temperature": 0.8,
 			"top_p":       0.9,
